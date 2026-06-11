@@ -1,0 +1,65 @@
+# available keys: https://github.com/obv-mikhail/InputBot/blob/develop/src/public.rs#L97
+
+# everything here is the default settings. If something is missing, then it'll be replaced with the default
+# YAML is whitespace-sensitive so try to make sure you get your tabs right
+
+keys:
+    activate: BackquoteKey # Activates the program. This is ` (or ~), next to 1 and above tab on my keyboard
+    mode: TabKey # Changes to the next mode (you can add your own modes below)
+    reset: BackspaceKey # Resets speed, mode, and held buttons
+    movement:
+        left: LeftKey # Left arrow
+        right: RightKey
+        up: UpKey
+        down: DownKey
+    speed:
+        up: EqualKey # +
+        down: MinusKey
+    step:
+        big: LeftControlKey # While held, makes moving be 2x and speed changes be 4x
+        small: LAltKey # Same but divided
+    mouse:
+        left: SpaceKey
+        middle: BackslashKey # Chosen because it's above enter on my current layout
+        right: EnterKey
+    scroll:
+        up: PeriodKey # >
+        down: CommaKey # <
+    save: LShiftKey # Hold this and press a slot to save the position to that slot
+    slots: # Press a slot to load that position
+        - Numrow1Key
+        - Numrow2Key
+        - Numrow3Key
+        - Numrow4Key
+        - Numrow5Key
+        - Numrow6Key
+        - Numrow7Key
+        - Numrow8Key
+        - Numrow9Key
+        - Numrow0Key
+config:
+    toggles: # Controls whether you need to press or hold the button to enable the program or hold a mouse button
+        activation: Toggle # Whether the mouse keys are on or off
+        left: Hold
+        middle: Hold
+        right: Hold
+    scroll: 2 # Lines per scroll key press
+    modes: # You can add more modes with different numbers by extending the list. First one is the default
+        -
+            type: linear # No acceleration
+            speed: 10.0 # Starting speed
+            step: 2.5 # How much the speed changes when you press the speed up or down buttons
+            acceleration: 0.0 # unused for linear
+        -
+            type: quadratic # speed goes up by (acceleration) every frame
+            speed: 4.0
+            step: 1.0
+            acceleration: 0.5
+        - 
+            type: exponential # speed is multiplied by (acceleration) every frame
+            speed: 1.0
+            step: 0.25
+            acceleration: 1.08
+
+
+            
