@@ -1,5 +1,5 @@
-use inputbot::{BlockInput, MouseButton};
-use std::{sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}}, thread, time::Duration};
+use inputbot::{BlockInput, MouseButton, MouseCursor};
+use std::{sync::{Arc, Mutex, atomic::{AtomicBool, AtomicIsize, Ordering}}, thread, time::Duration};
 
 mod settings;
 mod motion;
@@ -34,6 +34,10 @@ fn main() {
         ModeSet::new(
         &mouse_settings.config.modes
     )));
+
+    let current_remaining_offset = Arc::new(
+        (AtomicIsize::from(0), AtomicIsize::from(0))
+    );
     
     // Mouse Buttons
 
@@ -85,18 +89,17 @@ fn main() {
     });
 
     // Movement
-    for (pressed, key, direction, index) in [
-        (is_up_pressed, mouse_settings.keys.movement.up, Direction::Up, 0),
-        (is_down_pressed, mouse_settings.keys.movement.down, Direction::Down, 1),
-        (is_left_pressed, mouse_settings.keys.movement.left, Direction::Left, 2),
-        (is_right_pressed, mouse_settings.keys.movement.right, Direction::Right, 3),
+    for (pressed, key, direction) in [
+        (is_up_pressed, mouse_settings.keys.movement.up, Direction::Up),
+        (is_down_pressed, mouse_settings.keys.movement.down, Direction::Down),
+        (is_left_pressed, mouse_settings.keys.movement.left, Direction::Left),
+        (is_right_pressed, mouse_settings.keys.movement.right, Direction::Right),
     ] {
         let enabled_copy = Arc::clone(&current_enabled);
         let modes_copy = Arc::clone(&current_modes);
         let pressed_copy = Arc::clone(&pressed);
+        let offset_copy = Arc::clone(&current_remaining_offset);
         thread::spawn(move || {
-            let offset = (FRAMETIME * index) / 4;
-            thread::sleep(Duration::from_millis(offset));
             loop {
                 let mut movement = MouseMotion::new(
                             modes_copy.lock().unwrap().get_mode(),
@@ -110,7 +113,8 @@ fn main() {
                       enabled_copy.load(Ordering::Relaxed) {
                     movement.increment_speed();
                     let (dx, dy) = movement.get_delta();
-                    inputbot::MouseCursor::move_rel(dx, dy);
+                    offset_copy.0.fetch_add(dx, Ordering::Relaxed);
+                    offset_copy.1.fetch_add(dy, Ordering::Relaxed);
                     thread::sleep(Duration::from_millis(FRAMETIME));
                 }
             }
@@ -130,6 +134,19 @@ fn main() {
             pressed_copy.store(false, Ordering::SeqCst);
         });
     }
+
+    let offset_copy = Arc::clone(&current_remaining_offset);
+    thread::spawn(move || {
+        loop {
+            let dx = offset_copy.0.swap(0, Ordering::Relaxed);
+            let dy = offset_copy.1.swap(0, Ordering::Relaxed);
+            MouseCursor::move_rel(
+                dx.try_into().unwrap_or_default(),
+                dy.try_into().unwrap_or_default(),
+            );
+            thread::sleep(Duration::from_millis(FRAMETIME));
+        }
+    });
 
     // Activation
 

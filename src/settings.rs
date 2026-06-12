@@ -227,7 +227,7 @@ impl Default for Settings {
                 modes: vec![
                     MouseMode {
                         acceleration_type: AccelerationType::Linear,
-                        default_speed: 3.0,
+                        default_speed: 10.0,
                         current_speed: 0.0, // no effect here, used to keep track after you raise or lower the speed
                         step: 2.5,
                         acceleration: 0.0

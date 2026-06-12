@@ -48,12 +48,12 @@ impl MouseMotion {
             println!("Zero")
         }
     }
-    pub fn get_delta(&self) -> (i32, i32) {
+    pub fn get_delta(&self) -> (isize, isize) {
         match self.direction {
-            Direction::Up => {(0, -self.current_speed as i32)}
-            Direction::Down => {(0, self.current_speed as i32)}
-            Direction::Left => {(-self.current_speed as i32, 0)}
-            Direction::Right => {(self.current_speed as i32, 0)}
+            Direction::Up => {(0, -self.current_speed as isize)}
+            Direction::Down => {(0, self.current_speed as isize)}
+            Direction::Left => {(-self.current_speed as isize, 0)}
+            Direction::Right => {(self.current_speed as isize, 0)}
         }
     }
 }
