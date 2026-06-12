@@ -1,6 +1,6 @@
-// 
+//
 // If you're looking to change the default settings, scroll to the bottom
-// 
+//
 
 use inputbot::KeybdKey;
 
@@ -32,9 +32,9 @@ pub struct ModeSet {
 }
 
 impl ModeSet {
-    pub fn new(starting_modes: &Vec<MouseMode>) -> Self {
-        Self { 
-            modes: starting_modes.clone(),
+    pub fn new(starting_modes: &[MouseMode]) -> Self {
+        Self {
+            modes: starting_modes.to_owned(),
             mode_index: 0
         }
     }
@@ -51,56 +51,64 @@ impl ModeSet {
             |mode| {mode.reset_speed();}
         );
     }
-    pub fn increase_speed(&mut self) {
-        self.modes[self.mode_index].speed_up();
+    pub fn change_speed(&mut self, increase: bool, big_step: bool, small_step: bool) {
+        match increase {
+            true => {self.increase_speed(big_step, small_step);},
+            false => {self.decrease_speed(big_step, small_step);}
+        }
     }
-    pub fn decrease_speed(&mut self) {
-        self.modes[self.mode_index].speed_up();
+    pub fn increase_speed(&mut self, big_step: bool, small_step: bool) {
+        self.modes[self.mode_index].speed_up(big_step, small_step);
+    }
+    pub fn decrease_speed(&mut self, big_step: bool, small_step: bool) {
+        self.modes[self.mode_index].speed_down(big_step, small_step);
     }
 }
 
 #[derive(Debug, Copy, Clone)]
 pub struct MovementKeys {
-    pub left: KeybdKey,
-    pub right: KeybdKey,
-    pub up: KeybdKey,
-    pub down: KeybdKey,
+    pub up: Option<KeybdKey>,
+    pub down: Option<KeybdKey>,
+    pub left: Option<KeybdKey>,
+    pub right: Option<KeybdKey>,
 }
 
 
 #[derive(Debug, Copy, Clone)]
 pub struct SpeedKeys {
-    pub up: KeybdKey,
-    pub down: KeybdKey,
+    pub up: Option<KeybdKey>,
+    pub down: Option<KeybdKey>,
 }
 
 
 #[derive(Debug, Copy, Clone)]
 pub struct StepKeys {
-    pub big: KeybdKey,
-    pub small: KeybdKey,
+    pub big: Option<KeybdKey>,
+    pub small: Option<KeybdKey>,
 }
 
 
 #[derive(Debug, Copy, Clone)]
 pub struct MouseKeys {
-    pub left: KeybdKey,
-    pub middle: KeybdKey,
-    pub right: KeybdKey,
+    pub left: Option<KeybdKey>,
+    pub middle: Option<KeybdKey>,
+    pub right: Option<KeybdKey>,
 }
 
 
 #[derive(Debug, Copy, Clone)]
 pub struct ScrollKeys {
-    pub up: KeybdKey,
-    pub down: KeybdKey,
+    pub up: Option<KeybdKey>,
+    pub down: Option<KeybdKey>,
+    pub left: Option<KeybdKey>,
+    pub right: Option<KeybdKey>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ControllerKeys {
     pub activate: KeybdKey,
-    pub mode: KeybdKey,
-    pub reset: KeybdKey,
+    pub mode: Option<KeybdKey>,
+    pub reset: Option<KeybdKey>,
     pub movement: MovementKeys,
     pub speed: SpeedKeys,
     pub step: StepKeys,
@@ -119,6 +127,7 @@ pub enum ActivationMode {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum AccelerationType {
     Linear,
+    LinearStep,
     Quadratic,
     Exponential
 }
@@ -133,14 +142,28 @@ pub struct MouseMode {
 }
 
 impl MouseMode {
+    pub fn new(
+        acceleration_type: AccelerationType,
+        default_speed: f32,
+        step: f32,
+        acceleration: f32
+    ) -> Self {
+        Self {acceleration_type, default_speed, current_speed: default_speed, step, acceleration}
+    }
     pub fn reset_speed(&mut self) {
         self.current_speed = self.default_speed
     }
-    pub fn speed_up(&mut self) {
-        self.current_speed += self.step
+    pub fn speed_up(&mut self, is_big_step: bool, is_small_step: bool) {
+        let mut step = self.step;
+        if is_big_step {step *= 4.0}
+        if is_small_step {step /= 4.0}
+        self.current_speed += step;
     }
-    pub fn speed_down(&mut self) {
-        self.current_speed = (self.current_speed - self.step).max(0.0);
+    pub fn speed_down(&mut self, is_big_step: bool, is_small_step: bool) {
+        let mut step = self.step;
+        if is_big_step {step *= 4.0}
+        if is_small_step {step /= 4.0}
+        self.current_speed = (self.current_speed - step).max(0.0);
     }
 }
 
@@ -162,7 +185,7 @@ pub struct Config {
 
 #[derive(Debug, Clone)]
 pub struct Settings { // For the stuff that's set when the program starts and doesn't change
-    pub keys: ControllerKeys,
+    pub keybinds: ControllerKeys,
     pub config: Config
 }
 // fn new(filepath: &str) -> Settings {
@@ -174,33 +197,35 @@ pub struct Settings { // For the stuff that's set when the program starts and do
 
 impl Default for Settings {
     fn default() -> Self {
-        Settings { 
-            keys: ControllerKeys {
+        Settings {
+            keybinds: ControllerKeys {
                 activate: KeybdKey::BackquoteKey,
-                mode: KeybdKey::TabKey,
-                reset: KeybdKey::BackspaceKey,
-                movement: MovementKeys { 
-                    left: KeybdKey::LeftKey,
-                    right: KeybdKey::RightKey, 
-                    up: KeybdKey::UpKey,
-                    down: KeybdKey::DownKey,
+                mode: Some(KeybdKey::TabKey),
+                reset: Some(KeybdKey::BackspaceKey),
+                movement: MovementKeys {
+                    left: Some(KeybdKey::LeftKey),
+                    right: Some(KeybdKey::RightKey),
+                    up: Some(KeybdKey::UpKey),
+                    down: Some(KeybdKey::DownKey),
                 },
                 speed: SpeedKeys {
-                    up: KeybdKey::EqualKey,
-                    down: KeybdKey::MinusKey,
+                    up: Some(KeybdKey::EqualKey),
+                    down: Some(KeybdKey::MinusKey),
                 },
-                step: StepKeys { 
-                    big: KeybdKey::LControlKey, 
-                    small: KeybdKey::LAltKey,
+                step: StepKeys {
+                    big: Some(KeybdKey::LControlKey),
+                    small: Some(KeybdKey::LAltKey),
                 },
-                mouse: MouseKeys { 
-                    left: KeybdKey::SpaceKey,
-                    middle: KeybdKey::BackslashKey, 
-                    right: KeybdKey::EnterKey,
+                mouse: MouseKeys {
+                    left: Some(KeybdKey::SpaceKey),
+                    middle: Some(KeybdKey::BackslashKey),
+                    right: Some(KeybdKey::EnterKey),
                 },
-                scroll: ScrollKeys { 
-                    up: KeybdKey::PeriodKey, 
-                    down: KeybdKey::CommaKey,
+                scroll: ScrollKeys {
+                    up: Some(KeybdKey::PeriodKey),
+                    down: Some(KeybdKey::CommaKey),
+                    left: None,
+                    right: None,
                 },
                 save: KeybdKey::LShiftKey,
                 slots: vec![
@@ -216,43 +241,39 @@ impl Default for Settings {
                     KeybdKey::Numrow0Key,
                 ]
             },
-            config: Config { 
-                toggles: MouseActivationModes { 
-                    activation: ActivationMode::Toggle, 
-                    left: ActivationMode::Hold, 
-                    middle: ActivationMode::Hold, 
+            config: Config {
+                toggles: MouseActivationModes {
+                    activation: ActivationMode::Toggle,
+                    left: ActivationMode::Hold,
+                    middle: ActivationMode::Hold,
                     right: ActivationMode::Hold,
                 },
                 scroll: 2,
                 modes: vec![
-                    MouseMode {
-                        acceleration_type: AccelerationType::Linear,
-                        default_speed: 10.0,
-                        current_speed: 0.0, // no effect here, used to keep track after you raise or lower the speed
-                        step: 2.5,
-                        acceleration: 0.0
-                    },
-                    MouseMode {
-                        acceleration_type: AccelerationType::Quadratic,
-                        default_speed: 4.0,
-                        current_speed: 0.0,
-                        step: 1.0,
-                        acceleration: 0.5
-                    },
-                    MouseMode {
-                        acceleration_type: AccelerationType::Exponential,
-                        default_speed: 1.0,
-                        current_speed: 0.0,
-                        step: 0.25,
-                        acceleration: 1.08
-                    },
-                    MouseMode {
-                        acceleration_type: AccelerationType::Exponential,
-                        default_speed: 1.0,
-                        current_speed: 0.0,
-                        step: 0.25,
-                        acceleration: 1.2
-                    }
+                    MouseMode::new(
+                        AccelerationType::Linear,
+                        10.0, // starting speed
+                        2.5,  // change speed step size
+                        0.0   // acceleration, no effect for linear
+                    ),
+                    MouseMode::new(
+                        AccelerationType::LinearStep, // starts linear, then after 30 frames multiplies speed by acceleration
+                        4.0,
+                        1.0,
+                        10.0
+                    ),
+                    MouseMode::new(
+                        AccelerationType::Quadratic,
+                        4.0,
+                        1.0,
+                        0.5
+                    ),
+                    MouseMode::new(
+                        AccelerationType::Exponential,
+                        1.0,
+                        0.25,
+                        1.2
+                    )
                 ]
             }
         }
