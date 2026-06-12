@@ -34,6 +34,7 @@ impl MouseMotion {
         }
     }
     pub fn increment_speed(&mut self) {
+        self.frames_active += 1;
         match self.acceleration_type {
             AccelerationType::Linear => {}
             AccelerationType::Quadratic => {
@@ -42,6 +43,9 @@ impl MouseMotion {
             AccelerationType::Exponential => {
                 self.current_speed *= self.acceleration
             }
+        }
+        if self.frames_active == 1 {
+            println!("Zero")
         }
     }
     pub fn get_delta(&self) -> (i32, i32) {

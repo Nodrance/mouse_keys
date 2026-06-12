@@ -85,34 +85,41 @@ fn main() {
     });
 
     // Movement
-    for (pressed, key, direction) in [
-        (is_up_pressed, mouse_settings.keys.movement.up, Direction::Up),
-        (is_down_pressed, mouse_settings.keys.movement.down, Direction::Down),
-        (is_left_pressed, mouse_settings.keys.movement.left, Direction::Left),
-        (is_right_pressed, mouse_settings.keys.movement.right, Direction::Right),
+    for (pressed, key, direction, index) in [
+        (is_up_pressed, mouse_settings.keys.movement.up, Direction::Up, 0),
+        (is_down_pressed, mouse_settings.keys.movement.down, Direction::Down, 1),
+        (is_left_pressed, mouse_settings.keys.movement.left, Direction::Left, 2),
+        (is_right_pressed, mouse_settings.keys.movement.right, Direction::Right, 3),
     ] {
         let enabled_copy = Arc::clone(&current_enabled);
         let modes_copy = Arc::clone(&current_modes);
         let pressed_copy = Arc::clone(&pressed);
+        thread::spawn(move || {
+            let offset = (FRAMETIME * index) / 4;
+            thread::sleep(Duration::from_millis(offset));
+            loop {
+                let mut movement = MouseMotion::new(
+                            modes_copy.lock().unwrap().get_mode(),
+                            direction
+                        );
+                while !(pressed_copy.load(Ordering::Relaxed) && 
+                        enabled_copy.load(Ordering::Relaxed)) {
+                    thread::sleep(Duration::from_millis(FRAMETIME));
+                }
+                while pressed_copy.load(Ordering::Relaxed) && 
+                      enabled_copy.load(Ordering::Relaxed) {
+                    movement.increment_speed();
+                    let (dx, dy) = movement.get_delta();
+                    inputbot::MouseCursor::move_rel(dx, dy);
+                    thread::sleep(Duration::from_millis(FRAMETIME));
+                }
+            }
+        });
+        let pressed_copy = Arc::clone(&pressed);
+        let enabled_copy = Arc::clone(&current_enabled);
         key.blockable_bind(move || {
             if enabled_copy.load(Ordering::Relaxed) {
-                let mut movement = MouseMotion::new(
-                        modes_copy.lock().unwrap().get_mode(),
-                        direction);
-                let enabled_copy_copy = Arc::clone(&enabled_copy);
-                let pressed_copy_copy = Arc::clone(&pressed_copy);
-                thread::spawn(move || {
-                    let swap_result = pressed_copy_copy.compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire);
-                    if swap_result.is_err() {return}
-                    while
-                        pressed_copy_copy.load(Ordering::Relaxed) &&
-                        enabled_copy_copy.load(Ordering::Relaxed) {
-                        movement.increment_speed();
-                        let (dx, dy) = movement.get_delta();
-                        inputbot::MouseCursor::move_rel(dx, dy);
-                        thread::sleep(Duration::from_millis(FRAMETIME));
-                    }
-                });
+                pressed_copy.store(true, Ordering::SeqCst);
                 BlockInput::Block
             } else {
                 BlockInput::DontBlock
