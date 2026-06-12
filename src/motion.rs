@@ -1,5 +1,6 @@
 use crate::settings::{MouseMode, AccelerationType};
 
+const LINEAR_STEP_FRAMES: usize = 60;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Direction {
@@ -38,7 +39,7 @@ impl MouseMotion {
         match self.acceleration_type {
             AccelerationType::Linear => {}
             AccelerationType::LinearStep => {
-                if self.frames_active < 30 {
+                if self.frames_active < LINEAR_STEP_FRAMES {
                     self.current_speed = self.starting_speed
                 } else {
                     self.current_speed = self.starting_speed * self.acceleration

@@ -143,7 +143,7 @@ fn main() {
                     pressed_copy.store(true, Ordering::SeqCst);
                     BlockInput::Block
                 } else {
-                    BlockInput::DontBlock
+                      BlockInput::DontBlock
                 }
             });
             let pressed_copy = Arc::clone(&pressed);

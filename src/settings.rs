@@ -257,19 +257,19 @@ impl Default for Settings {
                         0.0   // acceleration, no effect for linear
                     ),
                     MouseMode::new(
-                        AccelerationType::LinearStep, // starts linear, then after 30 frames multiplies speed by acceleration
+                        AccelerationType::LinearStep, // starts linear, then after 60 frames multiplies speed by acceleration
                         4.0,
                         1.0,
-                        10.0
+                        5.0
                     ),
                     MouseMode::new(
-                        AccelerationType::Quadratic,
+                        AccelerationType::Quadratic, // adds acceleration to speed every frame
                         4.0,
                         1.0,
                         0.5
                     ),
                     MouseMode::new(
-                        AccelerationType::Exponential,
+                        AccelerationType::Exponential, // multiplies speed by acceleration every frame
                         1.0,
                         0.25,
                         1.2
