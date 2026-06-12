@@ -3,6 +3,15 @@
 # everything here is the default settings. If something is missing, then it'll be replaced with the default
 # YAML is whitespace-sensitive so try to make sure you get your tabs right
 
+
+#####
+#
+#  THIS FILE DOES NOT WORK
+#  This is how the settings will look eventually
+#  But for now the only way to modify them is to edit the code directly in setitngs.rs
+#
+#####
+
 keys:
     activate: BackquoteKey # Activates the program. This is ` (or ~), next to 1 and above tab on my keyboard
     mode: TabKey # Changes to the next mode (you can add your own modes below)

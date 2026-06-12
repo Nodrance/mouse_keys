@@ -44,9 +44,6 @@ impl MouseMotion {
                 self.current_speed *= self.acceleration
             }
         }
-        if self.frames_active == 1 {
-            println!("Zero")
-        }
     }
     pub fn get_delta(&self) -> (isize, isize) {
         match self.direction {

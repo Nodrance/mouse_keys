@@ -250,7 +250,7 @@ impl Default for Settings {
                         acceleration_type: AccelerationType::Exponential,
                         default_speed: 1.0,
                         current_speed: 0.0,
-                        step: 1.25,
+                        step: 0.25,
                         acceleration: 1.2
                     }
                 ]
