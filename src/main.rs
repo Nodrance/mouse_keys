@@ -49,6 +49,17 @@ fn main() {
     });
 
     let enabled_copy = Arc::clone(&current_enabled);
+    mouse_settings.keys.mouse.middle.blockable_bind(move || {
+        if enabled_copy.load(Ordering::Relaxed) {
+            toggle_button(MouseButton::MiddleButton);
+            BlockInput::Block
+        } else {
+            println!("Unclicked");
+            BlockInput::DontBlock
+        }
+    });
+
+    let enabled_copy = Arc::clone(&current_enabled);
     mouse_settings.keys.mouse.right.blockable_bind(move || {
         if enabled_copy.load(Ordering::Relaxed) {
             toggle_button(MouseButton::RightButton);
