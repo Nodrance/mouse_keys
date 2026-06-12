@@ -74,6 +74,7 @@ fn main() {
         keybind.blockable_bind(move || {
             if enabled_copy.load(Ordering::Relaxed) {
                 modes_copy.lock().unwrap().reset_modes();
+                println!("Reset speeds and changed to mode #1");
                 BlockInput::Block
             } else {
                 BlockInput::DontBlock
