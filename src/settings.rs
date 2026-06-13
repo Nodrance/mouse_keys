@@ -127,7 +127,7 @@ pub enum ActivationMode {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum AccelerationType {
     Linear,
-    LinearStep,
+    LinearStep{step_time: usize},
     Quadratic,
     Exponential
 }
@@ -261,7 +261,7 @@ impl Default for Settings {
                         0.0   // acceleration, no effect for linear
                     ),
                     MouseMode::new(
-                        AccelerationType::LinearStep(60), // starts linear, then after 60 frames multiplies speed by acceleration
+                        AccelerationType::LinearStep{step_time: 45}, // starts linear, then after 60 frames multiplies speed by acceleration
                         4.0, // start at 4
                         1.0, // go up or down by 1 when you press the change speed button
                         5.0 // go to 4*5=20 after 60 frames
