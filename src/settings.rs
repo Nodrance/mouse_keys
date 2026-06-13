@@ -198,81 +198,85 @@ pub struct Settings { // For the stuff that's set when the program starts and do
 impl Default for Settings {
     fn default() -> Self {
         Settings {
-            keybinds: ControllerKeys {
-                activate: KeybdKey::BackquoteKey,
-                mode: Some(KeybdKey::TabKey),
-                reset: Some(KeybdKey::BackspaceKey),
+            keybinds: ControllerKeys { 
+                // available keys: https://github.com/obv-mikhail/InputBot/blob/develop/src/public.rs#L97
+                // For most keys you need Some(KeybdKey:: name ) 
+                // If you want to disable a key, set it to None
+                // A few keys (like activating) don't have Some and can't be set to None
+                activate: KeybdKey::BackquoteKey, //Activates the program. This is ` (or ~), next to 1 and above tab on my keyboard
+                mode: Some(KeybdKey::TabKey), // Changes to the next mode (you can add your own modes below)
+                reset: Some(KeybdKey::BackspaceKey), // Resets speed and mode
                 movement: MovementKeys {
-                    left: Some(KeybdKey::LeftKey),
+                    left: Some(KeybdKey::LeftKey), // Left arrow
                     right: Some(KeybdKey::RightKey),
                     up: Some(KeybdKey::UpKey),
                     down: Some(KeybdKey::DownKey),
                 },
                 speed: SpeedKeys {
-                    up: Some(KeybdKey::EqualKey),
+                    up: Some(KeybdKey::EqualKey), // +
                     down: Some(KeybdKey::MinusKey),
                 },
                 step: StepKeys {
-                    big: Some(KeybdKey::LControlKey),
-                    small: Some(KeybdKey::LAltKey),
+                    big: Some(KeybdKey::LControlKey), // While held, makes moving and speed changes be 4x
+                    small: Some(KeybdKey::LAltKey), // Same but divided
                 },
                 mouse: MouseKeys {
                     left: Some(KeybdKey::SpaceKey),
-                    middle: Some(KeybdKey::BackslashKey),
+                    middle: Some(KeybdKey::BackslashKey), // Chosen because it's above enter on my current layout
                     right: Some(KeybdKey::EnterKey),
                 },
                 scroll: ScrollKeys {
-                    up: Some(KeybdKey::PeriodKey),
-                    down: Some(KeybdKey::CommaKey),
-                    left: None,
-                    right: None,
+                    up: Some(KeybdKey::PeriodKey), // >
+                    down: Some(KeybdKey::CommaKey), // <
+                    left: None, // Feel free to set these to Some(thing)
+                    right: None, 
                 },
-                save: KeybdKey::LShiftKey,
+                save: KeybdKey::LShiftKey, // Hold this to save instead of load
                 slots: vec![
-                    KeybdKey::Numrow1Key,
-                    KeybdKey::Numrow2Key,
-                    KeybdKey::Numrow3Key,
+                    KeybdKey::Numrow1Key, // press this to load
+                    KeybdKey::Numrow2Key, 
+                    KeybdKey::Numrow3Key, 
                     KeybdKey::Numrow4Key,
                     KeybdKey::Numrow5Key,
                     KeybdKey::Numrow6Key,
-                    KeybdKey::Numrow7Key,
-                    KeybdKey::Numrow8Key,
+                    KeybdKey::Numrow7Key, // add or remove keys to add or remove slots
+                    KeybdKey::Numrow8Key, // order doesn't matter
                     KeybdKey::Numrow9Key,
                     KeybdKey::Numrow0Key,
                 ]
             },
             config: Config {
                 toggles: MouseActivationModes {
-                    activation: ActivationMode::Toggle,
-                    left: ActivationMode::Hold,
+                    activation: ActivationMode::Toggle, // Available modes are Toggle and Hold
+                    left: ActivationMode::Hold, // You can set it per individual mouse key
                     middle: ActivationMode::Hold,
                     right: ActivationMode::Hold,
                 },
-                scroll: 2,
+                scroll: 2, // How many lines to scroll by when you press the scroll keys
                 modes: vec![
                     MouseMode::new(
                         AccelerationType::Linear,
                         10.0, // starting speed
-                        2.5,  // change speed step size
+                        2.5,  // how much to change the speed by when you change it
                         0.0   // acceleration, no effect for linear
                     ),
                     MouseMode::new(
-                        AccelerationType::LinearStep, // starts linear, then after 60 frames multiplies speed by acceleration
-                        4.0,
-                        1.0,
-                        5.0
+                        AccelerationType::LinearStep(60), // starts linear, then after 60 frames multiplies speed by acceleration
+                        4.0, // start at 4
+                        1.0, // go up or down by 1 when you press the change speed button
+                        5.0 // go to 4*5=20 after 60 frames
                     ),
                     MouseMode::new(
                         AccelerationType::Quadratic, // adds acceleration to speed every frame
-                        4.0,
-                        1.0,
-                        0.5
+                        4.0, // start at 4
+                        1.0, // speed is saved per mode
+                        0.5 // then 4.5, then 5.0, then 5.5
                     ),
                     MouseMode::new(
                         AccelerationType::Exponential, // multiplies speed by acceleration every frame
-                        1.0,
-                        0.25,
-                        1.2
+                        1.0, //start at 1
+                        0.25, 
+                        1.1 // exponentials grow FAST
                     )
                 ]
             }
