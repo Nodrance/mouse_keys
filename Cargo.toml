@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 inputbot = {git = "https://github.com/obv-mikhail/InputBot", branch = "develop"}
+mouse-rs = "0.4.2"
