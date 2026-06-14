@@ -1,6 +1,7 @@
 use inputbot::{BlockInput, MouseButton, MouseCursor, MouseWheel};
 use std::{thread, time::Duration};
 use std::sync::{Arc, Mutex, atomic::{AtomicBool, AtomicIsize, Ordering}};
+use mouse_rs::Mouse;
 
 mod settings;
 mod motion;
@@ -157,14 +158,30 @@ fn main() {
     // Actually move
 
     let offset_copy = Arc::clone(&current_remaining_offset);
+    let enabled_copy = Arc::clone(&is_mouse_keys_enabled);
     thread::spawn(move || {
+        let mouse = Mouse::new();
         loop {
             let dx = offset_copy.0.swap(0, Ordering::Relaxed);
             let dy = offset_copy.1.swap(0, Ordering::Relaxed);
-            MouseCursor::move_rel(
-                dx.try_into().unwrap_or_default(),
-                dy.try_into().unwrap_or_default(),
-            );
+            // MouseCursor::move_rel(
+            //     dx.try_into().unwrap_or_default(),
+            //     dy.try_into().unwrap_or_default(),
+            // );
+            if ((dx != 0 || dy != 0) && enabled_copy.load(Ordering::Relaxed)) {
+                match mouse.get_position() {
+                    Ok(curr_pos) =>  {
+                        let targ_x = curr_pos.x + dx as i32;
+                        let targ_y = curr_pos.y + dy as i32;
+                        if let Err(err) = mouse.move_to(targ_x, targ_y) {
+                            println!("Problem moving mouse: {}", err)
+                        }
+                    }
+                    Err(err) => {
+                        println!("Problem getting position: {}", err)
+                    }   
+                }
+            }
             thread::sleep(Duration::from_millis(FRAMETIME));
         }
     });
